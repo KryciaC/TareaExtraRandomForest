@@ -1,0 +1,142 @@
+#Tarea Comodin
+Introducción a minería de datos - Krycia Castillo 
+
+```{r}
+install.packages("randomForest")
+library(randomForest)
+```
+```{r}
+#Se carga el dataset de Migración del censo 2018, de acuerdo con lo observado en tareas previas se filtra el dataset considerando unicamente DEPARTAMENTO, MUNICIPIO, AREA, PEI3, PEI4 y PEI5:
+
+data <- read.csv('C:/Users/lmpgp/Downloads/Kry/db_csv_/MIGRACION_BDP.csv', sep= ',')
+
+data <- data[ ,c(1,2,5,9,10,11)]
+
+```
+
+```{r}
+#Se elimina los datos nulos. Vamos a predecir la variable departamento por lo cual se procede a convertir a factor:
+data$PEI5[data$PEI5 == 9999] <- NA
+data <- na.omit(data)
+data$DEPARTAMENTO <- as.factor(data$DEPARTAMENTO)
+```
+
+```{r}
+#Se desordena la data para luego generar dos sets de datos considerando un 80% de los datos para entrenar el algoritmo y un 20% para probarlo:
+
+set.seed(100)
+data <- data[sample(1:nrow(data)),]
+
+index <-sample(1:nrow(data), 0.8*nrow(data))
+
+train <- data[index,]
+test <- data[-index,]
+```
+
+```{r}
+#Se crea el bosque:
+bosque <- randomForest(DEPARTAMENTO ~ MUNICIPIO + AREA + PEI3 + PEI4 + PEI5,
+                       data = train,
+                       ntree = 50,
+                       mtry = 3
+                       )
+
+```
+
+```{r}
+entreno <- predict(bosque, test)
+
+entreno
+```
+
+```{r}
+dato_nuevo <- data.frame(
+  MUNICIPIO= 1417,
+  AREA= 1,
+  PEI3= 2,
+  PEI4= 15,
+  PEI5= 2015
+)
+
+prediccion <- predict(bosque, dato_nuevo)
+prediccion
+```
+```{r}
+#Se carga el dataset de Migración del censo 2018, de acuerdo con lo observado en tareas previas se filtra el dataset considerando unicamente DEPARTAMENTO, AREA, PEI3, PEI4 y PEI5:
+
+data2 <- read.csv('C:/Users/lmpgp/Downloads/Kry/db_csv_/MIGRACION_BDP.csv', sep= ',')
+
+data2 <- data2[ ,c(1,5,9,10,11)]
+
+```
+
+```{r}
+#Se elimina los datos nulos. Vamos a predecir la variable departamento por lo cual se procede a convertir a factor:
+data2$PEI5[data2$PEI5 == 9999] <- NA
+data2 <- na.omit(data2)
+data2$DEPARTAMENTO <- as.factor(data2$DEPARTAMENTO)
+```
+
+```{r}
+#Se desordena la data para luego generar dos sets de datos considerando un 80% de los datos para entrenar el algoritmo y un 20% para probarlo:
+
+set.seed(100)
+data2 <- data2[sample(1:nrow(data2)),]
+
+index <-sample(1:nrow(data2), 0.8*nrow(data2))
+
+train2 <- data2[index,]
+test2 <- data2[-index,]
+```
+
+```{r}
+#Se crea el bosque:
+bosque2 <- randomForest(DEPARTAMENTO ~  AREA + PEI3 + PEI4 + PEI5,
+                       data = train2,
+                       ntree = 100,
+                       mtry = 3
+                       )
+
+```
+
+```{r}
+entreno2 <- predict(bosque2, test2)
+
+entreno2
+```
+
+
+```{r}
+#Área urbana:
+dato_nuevo2 <- data.frame(
+  AREA= 1, #Urbana
+  PEI3= 1, #Hombre
+  PEI4= 7, #Edad
+  PEI5= 2007 #Año de migración
+)
+
+prediccion2 <- predict(bosque2, dato_nuevo2)
+prediccion2
+```
+
+
+```{r}
+#Rural
+dato_nuevo3 <- data.frame(
+  AREA= 2, #Rural
+  PEI3= 1, #hombre
+  PEI4= 82, #Edad
+  PEI5= 2018 #Año de migración
+)
+
+prediccion3 <- predict(bosque2, dato_nuevo3)
+prediccion3
+```
+
+
+
+
+
+
+
+
